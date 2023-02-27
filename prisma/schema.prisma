@@ -1,0 +1,125 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Account {
+  id                String  @id
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Comment {
+  id        Int    @id @default(autoincrement())
+  message   String
+  userId    String
+  channelID Int
+
+  @@index([channelID])
+  @@index([userId])
+}
+
+model Server {
+  id         Int     @id @default(autoincrement())
+  name       String
+  blurb      String?
+  logo_url   String?
+  ownerId    String
+  category   String  @default("other")
+  banner_url String?
+  type       String  @default("private")
+
+  @@index([ownerId])
+}
+
+model Server_Admin {
+  id         Int      @id @default(autoincrement())
+  roles      Json
+  adminId    String
+  ServerId   Int
+  assignedAt DateTime @default(now())
+  assignedBy String
+
+  @@index([ServerId])
+  @@index([adminId])
+}
+
+model Server_Channel {
+  id          Int     @id @default(autoincrement())
+  name        String
+  ServerId    Int
+  description String?
+  type        String
+
+  @@index([ServerId])
+}
+
+model Server_Member {
+  id        Int      @id @default(autoincrement())
+  memberId  String
+  ServerId  Int
+  joinedAt  DateTime @default(now())
+  invitedBy String
+
+  @@index([ServerId])
+  @@index([memberId])
+}
+
+model Session {
+  id           String   @id
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  @@index([userId])
+}
+
+model User {
+  id                String    @id
+  name              String?
+  email             String?   @unique
+  provider          String?
+  refresh_token     String?
+  access_token      String?
+  token_expiration  DateTime?
+  type              Json?
+  registered_at     DateTime? @default(now())
+  name_display_pref String    @default("real")
+  real_name_use     String    @default("ask")
+  emailVerified     DateTime?
+  psuedonym         String?
+  psuedonym_image   String?
+  image             String?
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model WSConnection {
+  connectionID String @id
+  userId       String
+  channelID    Int
+
+  @@index([userId])
+}
