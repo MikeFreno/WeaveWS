@@ -4,10 +4,16 @@ provider:
   runtime: nodejs14.x
 plugins:
   - serverless-webpack
+  - serverless-webpack-prisma
   - serverless-dotenv-plugin
   - serverless-plugin-typescript
 package:
-  artifact: .serverless/weave-ws.zip
+  artifact: .build/serverless/weave-ws.zip
+  patterns:
+    - "!node_modules/.prisma/client/libquery_engine-*"
+    - "node_modules/.prisma/client/libquery_engine-rhel-*"
+    - "!node_modules/prisma/libquery_engine-*"
+    - "!node_modules/@prisma/engines/**"
 
 custom:
   webpack:

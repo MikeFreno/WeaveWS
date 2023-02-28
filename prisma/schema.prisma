@@ -1,5 +1,6 @@
 generator client {
   provider = "prisma-client-js"
+  binaryTargets = ["native", "rhel-openssl-1.0.x"]
 }
 
 datasource db {
@@ -117,9 +118,9 @@ model VerificationToken {
 }
 
 model WSConnection {
-  connectionID String @id
-  userId       String
-  channelID    Int
+  userId       String?
+  connectionID String  @id
+  channelID    Int?
 
   @@index([userId])
 }
