@@ -4,23 +4,37 @@ import * as AWS from "aws-sdk";
 
 const prisma = new PrismaClient();
 
-type payload = {
+type payloadType = {
   message: string;
   senderID: string;
   channelID: string;
+  channelUpdate: boolean;
 };
 
-export const handler = async (event: APIGatewayProxyEvent) => {
-  let payload: payload;
+export default async function handler(event: APIGatewayProxyEvent) {
+  let payload: payloadType;
   const connectionId = event.requestContext.connectionId;
   if (event.body) {
     payload = JSON.parse(event.body);
     const senderID = payload.senderID;
     const channelID = parseInt(payload.channelID);
-    let message;
-    // message request
-    if (payload.message) {
-      message = payload.message;
+    const message = payload.message;
+    //channel set request
+    console.log("Update Boolean: " + payload.channelUpdate);
+    if (payload.channelUpdate === true) {
+      console.log("This Connection: " + connectionId);
+      await prisma.wSConnection.update({
+        where: {
+          connectionID: connectionId,
+        },
+        data: {
+          channelID: channelID,
+          userId: senderID,
+        },
+      });
+      return { statusCode: 200, body: "Connection update." };
+      // message request
+    } else if (payload.channelUpdate === false) {
       const comment = await prisma.comment.create({
         data: {
           message: message,
@@ -62,20 +76,7 @@ export const handler = async (event: APIGatewayProxyEvent) => {
       );
       return { statusCode: 200, body: "Message sent." };
     }
-    //channel select request
-    else {
-      prisma.wSConnection.update({
-        where: {
-          connectionID: connectionId,
-        },
-        data: {
-          channelID: channelID,
-          userId: senderID,
-        },
-      });
-      return { statusCode: 200, body: "Connection update." };
-    }
   } else {
     return { statusCode: 400, body: "Invalid request." };
   }
-};
+}
